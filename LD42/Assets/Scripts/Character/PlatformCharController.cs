@@ -43,7 +43,7 @@ public class PlatformCharController : MonoBehaviour {
 	GroundedCollider groundCheck;
 	
 	string[] _allStates;
-	State _lastState; // For animation purposes
+	State _lastState = State.Jumping; // For animation purposes
 	bool _inMenu; // Disables input while in menu
 
 	float _attackDuration = 0f;
@@ -66,6 +66,8 @@ public class PlatformCharController : MonoBehaviour {
 
 		// Gets all the possible states in a string array, for animation purposes
 		_allStates = ((State[])System.Enum.GetValues(typeof(State))).Select(x => x.ToString()).ToArray();
+
+        
 	}
 
 	public Direction GetDirection() {
@@ -197,11 +199,13 @@ public class PlatformCharController : MonoBehaviour {
 	}
 
 	void UpdateMovement(float hMov) {
-		rb.velocity = new Vector2(hMov * Speed, rb.velocity.y);
-
+        Vector2 mov = Vector2.right * hMov * Speed * Time.deltaTime * 60;
+        
+        rb.velocity = new Vector2(mov.x, rb.velocity.y);
+        
 		if (new State[] { State.Running, State.Falling, State.Jumping }.Contains(CurrentState) && Mathf.Abs(hMov) > MovError) 
 			SetDirection(hMov.ToDirection());
-	}
+    }
 
 	void UpdateJumping(float hMov) {
 		if (Input.GetButtonDown("Jump")) {
@@ -231,7 +235,6 @@ public class PlatformCharController : MonoBehaviour {
 			an.SetBool(CurrentState.ToString(), true);
 			_lastState = CurrentState;
 		}
-
 		
 		an.SetFloat("HSpeed", _inMenu ? 0 : Mathf.Abs(hMov));
 		an.SetFloat("VSpeed", _inMenu ? 0 : rb.velocity.y);
