@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 #pragma warning disable 414, 219
 
@@ -9,6 +10,9 @@ public class PlatformCharController : MonoBehaviour {
 
 	public float Speed = 20f;
 	public float JumpSpeed = 48f;
+
+    [Tooltip("How much slow you need to be considered not moving")]
+    public float MovError = 0.1f;
 
 	public State CurrentState = State.Running;
 
@@ -19,6 +23,9 @@ public class PlatformCharController : MonoBehaviour {
 	AudioSource audios;
 
 	GroundedCollider groundCheck;
+    
+    string[] _allStates;
+    State _lastState; // For animation purposes
 
 	// Use this for initialization
 	void Start () {
@@ -29,6 +36,9 @@ public class PlatformCharController : MonoBehaviour {
 		audios = GetComponent<AudioSource>();
 
 		groundCheck = GetComponentInChildren<GroundedCollider>();
+
+        // Gets all the possible states in a string array, for animation purposes
+        _allStates = ((State[])System.Enum.GetValues(typeof(State))).Select(x => x.ToString()).ToArray();
 	}
 
 	public Direction GetDirection() {
@@ -41,6 +51,8 @@ public class PlatformCharController : MonoBehaviour {
 			return;
 
 		sr.flipX = dir == Direction.Left;
+
+        hitbox.offset = new Vector2(dir.ToFloat() * -Mathf.Abs(hitbox.offset.x), hitbox.offset.y);
 	}
 
 	public void HitGround() {
@@ -58,13 +70,19 @@ public class PlatformCharController : MonoBehaviour {
 		
 		UpdateMovement(hMov);
 		UpdateJumping(hMov);
+        UpdateFalling();
 
 		if (CurrentState == State.Running && !groundCheck.Grounded)
 			CurrentState = State.Falling;
+
+        UpdateAnimation(hMov);
 	}
 
 	void UpdateMovement(float hMov) {
 		rb.velocity = new Vector2(hMov * Speed, rb.velocity.y);
+
+        if (CurrentState == State.Running && Mathf.Abs(hMov) > MovError) 
+            SetDirection(hMov.ToDirection());
 	}
 
 	void UpdateJumping(float hMov) {
@@ -76,4 +94,27 @@ public class PlatformCharController : MonoBehaviour {
 			}
 		}
 	}
+
+    void UpdateFalling() {
+        if (CurrentState == State.Jumping && rb.velocity.y < 0)
+            CurrentState = State.Falling;
+    }
+
+    void ResetAllAnimation() {
+        foreach (string anim in _allStates) {
+            an.SetBool(anim, false);
+        }
+    }
+
+    void UpdateAnimation(float hMov) {
+        if (CurrentState != _lastState)
+        {
+            ResetAllAnimation();
+            an.SetBool(CurrentState.ToString(), true);
+            _lastState = CurrentState;
+        }
+
+        an.SetFloat("HSpeed", Mathf.Abs(hMov));
+        an.SetFloat("VSpeed", rb.velocity.y);
+    }
 }
