@@ -22,10 +22,12 @@ public class PlatformCharController : MonoBehaviour {
 	Collider2D hitbox;
 	AudioSource audios;
 
+    InventoryController inventory;
 	GroundedCollider groundCheck;
     
     string[] _allStates;
     State _lastState; // For animation purposes
+    bool _inMenu; // Disables input while in menu
 
 	// Use this for initialization
 	void Start () {
@@ -34,6 +36,7 @@ public class PlatformCharController : MonoBehaviour {
 		sr = GetComponent<SpriteRenderer>();
 		hitbox = GetComponent<Collider2D>();
 		audios = GetComponent<AudioSource>();
+        inventory = GetComponent<InventoryController>();
 
 		groundCheck = GetComponentInChildren<GroundedCollider>();
 
@@ -59,6 +62,18 @@ public class PlatformCharController : MonoBehaviour {
 		CurrentState = State.Running;
 	}
 
+    public void OpenMenu() {
+        _inMenu = true;
+    }
+
+    public void CloseMenu() {
+        _inMenu = false;
+    }
+
+    public bool MenuState() {
+        return _inMenu;
+    }
+
 	void ResetState() {
 		CurrentState = groundCheck.Grounded ? State.Running : State.Falling;
 	}
@@ -68,7 +83,7 @@ public class PlatformCharController : MonoBehaviour {
 		float yMov = Input.GetAxis("Vertical");
 
 		
-		UpdateMovement(hMov);
+		if (!_inMenu) UpdateMovement(hMov);
 		UpdateJumping(hMov);
         UpdateFalling();
 
@@ -114,7 +129,8 @@ public class PlatformCharController : MonoBehaviour {
             _lastState = CurrentState;
         }
 
-        an.SetFloat("HSpeed", Mathf.Abs(hMov));
-        an.SetFloat("VSpeed", rb.velocity.y);
+        
+        an.SetFloat("HSpeed", _inMenu ? 0 : Mathf.Abs(hMov));
+        an.SetFloat("VSpeed", _inMenu ? 0 : rb.velocity.y);
     }
 }
