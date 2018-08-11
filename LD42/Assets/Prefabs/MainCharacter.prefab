@@ -236,8 +236,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 150
   JumpSpeed: 500
-  MovError: 0.1
+  MovError: 0.3
   AttackDuration: 0.36
+  BowDuration: 1.1
+  BowJumpDuration: 0.9
+  ArrowPrefab: {fileID: 1695521112816092, guid: e1223edaec82e044e9c58b839c2752cc,
+    type: 2}
+  ArrowOffset: {x: 1, y: -2}
+  ArrowTime: 0.26
+  ArrowJumpTime: 0.36
   CurrentState: 0
 --- !u!114 &114919239123083708
 MonoBehaviour:

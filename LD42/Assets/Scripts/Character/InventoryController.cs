@@ -95,7 +95,6 @@ public class InventoryController : MonoBehaviour {
             cursorPosition.anchoredPosition = new Vector3(CursorStartingPoint + CursorMove * _cursorIndex, cursorPosition.anchoredPosition.y, 0);
 
             if (Input.GetButtonDown("PickUp") && _currentTimer <= 0f) {
-                Debug.Log("Confirm, index: " + _cursorIndex);
 
                 PickUp pedestalItem = _currentPedestal.Type;
                 Sprite pedestalSprite = _currentPedestal.GetSprite();
@@ -114,20 +113,6 @@ public class InventoryController : MonoBehaviour {
     }
 
     public void PickUpItem(PickUpController pedestal) {
-        /*var flag = false;
-
-        for (var i = 0; i < _spaces.Length; i++)
-        {
-            if (_spaces[i] == PickUp.Empty)
-            {
-                flag = true;
-                _spaces[i] = PickUp.Sword;
-                inventoryPanels[i].sprite = graphics;
-                inventoryPanels[i].color = new Color(1, 1, 1, 1);
-                break;
-            }
-        } */
-
         _currentPedestal = pedestal;
         controller.OpenMenu();
         cursorImage.enabled = true;

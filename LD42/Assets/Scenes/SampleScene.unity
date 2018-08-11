@@ -956,11 +956,6 @@ Prefab:
       propertyPath: InventoryPanels.Array.data[2]
       value: 
       objectReference: {fileID: 1417721957}
-    - target: {fileID: 114804663440786774, guid: d83c7d22cd6fe6c42935f344bcd4fdb4,
-        type: 2}
-      propertyPath: AttackDuration
-      value: 0.36
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d83c7d22cd6fe6c42935f344bcd4fdb4, type: 2}
   m_IsPrefabAsset: 0

@@ -11,13 +11,26 @@ public class PlatformCharController : MonoBehaviour {
 	public float Speed = 20f;
 	public float JumpSpeed = 48f;
 
-    [Tooltip("How much slow you need to be considered not moving")]
-    public float MovError = 0.1f;
+	[Tooltip("How much slow you need to be considered not moving")]
+	public float MovError = 0.1f;
 
-    [Tooltip("Attack duration, in seconds")]
-    public float AttackDuration = 1f;
+	[Tooltip("Attack duration, in seconds")]
+	public float AttackDuration = 1f;
 
-	public State CurrentState = State.Running;
+	[Tooltip("Bow attack duration, in seconds")]
+	public float BowDuration = 1f;
+
+    public float BowJumpDuration = 1.1f;
+
+    public GameObject ArrowPrefab;
+    public Vector2 ArrowOffset = Vector2.one;
+    [Tooltip("When the arrow starts, in seconds from the end of the bow animation")]
+    public float ArrowTime = .1f;
+
+    [Tooltip("When the arrow starts, in seconds from the end of the bow jump animation")]
+    public float ArrowJumpTime = .26f;
+
+    public State CurrentState = State.Running;
 
 	Rigidbody2D rb;
 	Animator an;
@@ -25,14 +38,19 @@ public class PlatformCharController : MonoBehaviour {
 	Collider2D hitbox;
 	AudioSource audios;
 
-    Collider2D damageHitbox;
-    InventoryController inventory;
+	Collider2D damageHitbox;
+	InventoryController inventory;
 	GroundedCollider groundCheck;
-    
-    string[] _allStates;
-    State _lastState; // For animation purposes
-    bool _inMenu; // Disables input while in menu
-    float _attackDuration = 0f;
+	
+	string[] _allStates;
+	State _lastState; // For animation purposes
+	bool _inMenu; // Disables input while in menu
+
+	float _attackDuration = 0f;
+	float _bowDuration = 0f;
+    float _bowJumpDuration = 0f;
+
+    bool _arrowShot = false;
 
 	// Use this for initialization
 	void Start () {
@@ -41,13 +59,13 @@ public class PlatformCharController : MonoBehaviour {
 		sr = GetComponent<SpriteRenderer>();
 		hitbox = GetComponent<Collider2D>();
 		audios = GetComponent<AudioSource>();
-        inventory = GetComponent<InventoryController>();
+		inventory = GetComponent<InventoryController>();
 
 		groundCheck = GetComponentInChildren<GroundedCollider>();
-        damageHitbox = GameObject.FindGameObjectWithTag("Damage").GetComponent<Collider2D>();
+		damageHitbox = GameObject.FindGameObjectWithTag("Damage").GetComponent<Collider2D>();
 
-        // Gets all the possible states in a string array, for animation purposes
-        _allStates = ((State[])System.Enum.GetValues(typeof(State))).Select(x => x.ToString()).ToArray();
+		// Gets all the possible states in a string array, for animation purposes
+		_allStates = ((State[])System.Enum.GetValues(typeof(State))).Select(x => x.ToString()).ToArray();
 	}
 
 	public Direction GetDirection() {
@@ -61,30 +79,30 @@ public class PlatformCharController : MonoBehaviour {
 
 		sr.flipX = dir == Direction.Left;
 
-        hitbox.offset = new Vector2(dir.ToFloat() * -Mathf.Abs(hitbox.offset.x), hitbox.offset.y);
-        damageHitbox.offset = new Vector2(dir.ToFloat() * Mathf.Abs(damageHitbox.offset.x), damageHitbox.offset.y);
+		hitbox.offset = new Vector2(dir.ToFloat() * -Mathf.Abs(hitbox.offset.x), hitbox.offset.y);
+		damageHitbox.offset = new Vector2(dir.ToFloat() * Mathf.Abs(damageHitbox.offset.x), damageHitbox.offset.y);
 	}
 
 	public void HitGround() {
 		CurrentState = State.Running;
 	}
 
-    public void OpenMenu() {
-        _inMenu = true;
-    }
+	public void OpenMenu() {
+		_inMenu = true;
+	}
 
-    public void CloseMenu() {
-        _inMenu = false;
-    }
+	public void CloseMenu() {
+		_inMenu = false;
+	}
 
-    public bool MenuState() {
-        return _inMenu;
-    }
+	public bool MenuState() {
+		return _inMenu;
+	}
 
-    bool HasPickup(PickUp type)
-    {
-        return inventory.HasPickUp(type);
-    }
+	bool HasPickup(PickUp type)
+	{
+		return inventory.HasPickUp(type);
+	}
 
 	void ResetState() {
 		CurrentState = groundCheck.Grounded ? State.Running : State.Falling;
@@ -94,48 +112,95 @@ public class PlatformCharController : MonoBehaviour {
 		float hMov = Input.GetAxis("Horizontal");
 		float yMov = Input.GetAxis("Vertical");
 
-        if (UpdateTimer(ref _attackDuration))
+		if (UpdateTimer(ref _attackDuration))
+		{
+			ResetState();
+			damageHitbox.enabled = false;
+		}
+		else if (UpdateTimer(ref _bowDuration))
+		{
+			ResetState();
+            _arrowShot = false;
+        }
+        else if (UpdateTimer(ref _bowJumpDuration))
         {
             ResetState();
-            damageHitbox.enabled = false;
-        }        
+            _arrowShot = false;
+        }
 
-        if (!_inMenu && CurrentState != State.Attacking && _attackDuration <= 0f)
+
+        // Arrow
+        if ((CurrentState == State.Bow && _bowDuration <= ArrowTime && !_arrowShot) || (CurrentState == State.BowJump && _bowJumpDuration <= ArrowJumpTime && !_arrowShot))
         {
-            UpdateMovement(hMov);
-            UpdateJumping(hMov);
+            GameObject arrow = Instantiate(ArrowPrefab);
+            arrow.transform.position = transform.position + new Vector3(ArrowOffset.x * GetDirection().ToFloat(), ArrowOffset.y);
+
+            if (GetDirection() == Direction.Left)
+                arrow.GetComponent<SpriteRenderer>().flipX = true;
+
+            _arrowShot = true;
+        }
+
+        if (!_inMenu && !new State[] { State.Attacking, State.Bow, State.BowJump }.Contains (CurrentState) && _attackDuration <= 0f)
+		{
+			UpdateMovement(hMov);
+			UpdateJumping(hMov);
+		}
+
+        if (CurrentState == State.BowJump)
+        {
+            rb.velocity = new Vector2(0, 0);
         }
         UpdateFalling();
 
-        if (HasPickup(PickUp.Sword) && Input.GetButtonDown("Attack") && CurrentState == State.Running)
-        {
-            CurrentState = State.Attacking;
-            _attackDuration = AttackDuration;
-            damageHitbox.enabled = true;
-        }
+		if (HasPickup(PickUp.Sword) && Input.GetButtonDown("Attack") && CurrentState == State.Running)
+		{
+			CurrentState = State.Attacking;
+			_attackDuration = AttackDuration;
+			damageHitbox.enabled = true;
+			rb.velocity = new Vector2(0, rb.velocity.y);
+		}
 
+        if (HasPickup(PickUp.Bow) && Input.GetButtonDown("Bow"))
+        {
+            if (CurrentState == State.Running)
+            {
+                CurrentState = State.Bow;
+                _bowDuration = BowDuration;
+                rb.velocity = new Vector2(0, rb.velocity.y);
+            }
+            else if (CurrentState == State.Falling || CurrentState == State.Jumping)
+            {
+                CurrentState = State.BowJump;
+                _bowJumpDuration = BowJumpDuration;
+            }
+        }
+        
 		if (CurrentState == State.Running && !groundCheck.Grounded)
 			CurrentState = State.Falling;
 
-        UpdateAnimation(hMov);
+		UpdateAnimation(hMov);
 	}
 
-    bool UpdateTimer(ref float timer)
-    {
-        timer -= Time.deltaTime;
-        if (timer < 0f)
-        {
-            timer = 0f;
-            return true;
-        }
-        return false;
-    }
+	bool UpdateTimer(ref float timer)
+	{
+		if (timer > 0f)
+		{
+			timer -= Time.deltaTime;
+			if (timer <= 0f)
+			{
+				timer = 0f;
+				return true;
+			}
+		}
+		return false;
+	}
 
 	void UpdateMovement(float hMov) {
 		rb.velocity = new Vector2(hMov * Speed, rb.velocity.y);
 
-        if (CurrentState == State.Running && Mathf.Abs(hMov) > MovError) 
-            SetDirection(hMov.ToDirection());
+		if (new State[] { State.Running, State.Falling, State.Jumping }.Contains(CurrentState) && Mathf.Abs(hMov) > MovError) 
+			SetDirection(hMov.ToDirection());
 	}
 
 	void UpdateJumping(float hMov) {
@@ -148,27 +213,27 @@ public class PlatformCharController : MonoBehaviour {
 		}
 	}
 
-    void UpdateFalling() {
-        if (CurrentState == State.Jumping && rb.velocity.y < 0)
-            CurrentState = State.Falling;
-    }
+	void UpdateFalling() {
+		if (CurrentState == State.Jumping && rb.velocity.y < 0)
+			CurrentState = State.Falling;
+	}
 
-    void ResetAllAnimation() {
-        foreach (string anim in _allStates) {
-            an.SetBool(anim, false);
-        }
-    }
+	void ResetAllAnimation() {
+		foreach (string anim in _allStates) {
+			an.SetBool(anim, false);
+		}
+	}
 
-    void UpdateAnimation(float hMov) {
-        if (CurrentState != _lastState)
-        {
-            ResetAllAnimation();
-            an.SetBool(CurrentState.ToString(), true);
-            _lastState = CurrentState;
-        }
+	void UpdateAnimation(float hMov) {
+		if (CurrentState != _lastState)
+		{
+			ResetAllAnimation();
+			an.SetBool(CurrentState.ToString(), true);
+			_lastState = CurrentState;
+		}
 
-        
-        an.SetFloat("HSpeed", _inMenu ? 0 : Mathf.Abs(hMov));
-        an.SetFloat("VSpeed", _inMenu ? 0 : rb.velocity.y);
-    }
+		
+		an.SetFloat("HSpeed", _inMenu ? 0 : Mathf.Abs(hMov));
+		an.SetFloat("VSpeed", _inMenu ? 0 : rb.velocity.y);
+	}
 }

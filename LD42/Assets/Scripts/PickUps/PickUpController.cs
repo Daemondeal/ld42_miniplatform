@@ -43,7 +43,6 @@ public class PickUpController : MonoBehaviour {
             if (Input.GetButtonDown("PickUp") && playerController.CurrentState == State.Running)
             {
                 playerInventory.PickUpItem(this);
-                Debug.Log("PickUp");
             }
 
         }
