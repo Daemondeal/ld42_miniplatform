@@ -9,6 +9,8 @@ TagManager:
   - InventoryCursor
   - Damage
   - Arrow
+  - DeathBarrier
+  - Enemy
   layers:
   - Default
   - TransparentFX

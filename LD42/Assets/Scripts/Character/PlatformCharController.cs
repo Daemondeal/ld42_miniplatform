@@ -24,6 +24,10 @@ public class PlatformCharController : MonoBehaviour {
 
     public GameObject ArrowPrefab;
     public Vector2 ArrowOffset = Vector2.one;
+
+    [Tooltip("When the damage hitbox appears, in seconds from the end of the attack")]
+    public float DamageTime = .3f;
+
     [Tooltip("When the arrow starts, in seconds from the end of the bow animation")]
     public float ArrowTime = .1f;
 
@@ -31,6 +35,8 @@ public class PlatformCharController : MonoBehaviour {
     public float ArrowJumpTime = .26f;
 
     public State CurrentState = State.Running;
+
+    public UnityEngine.UI.Text GameOverText;
 
 	Rigidbody2D rb;
 	Animator an;
@@ -131,6 +137,11 @@ public class PlatformCharController : MonoBehaviour {
         }
 
 
+        if (CurrentState == State.Attacking && _attackDuration <= DamageTime)
+        {
+            damageHitbox.enabled = true;
+        }
+
         // Arrow
         if ((CurrentState == State.Bow && _bowDuration <= ArrowTime && !_arrowShot) || (CurrentState == State.BowJump && _bowJumpDuration <= ArrowJumpTime && !_arrowShot))
         {
@@ -159,7 +170,7 @@ public class PlatformCharController : MonoBehaviour {
 		{
 			CurrentState = State.Attacking;
 			_attackDuration = AttackDuration;
-			damageHitbox.enabled = true;
+			//damageHitbox.enabled = true;
 			rb.velocity = new Vector2(0, rb.velocity.y);
 		}
 
@@ -212,7 +223,7 @@ public class PlatformCharController : MonoBehaviour {
 			if (CurrentState == State.Running) {
 				rb.velocity += Vector2.up * JumpSpeed;
 				CurrentState = State.Jumping;
-				SetDirection(hMov.ToDirection());
+				//SetDirection(hMov.ToDirection());
 			}
 		}
 	}
@@ -239,4 +250,17 @@ public class PlatformCharController : MonoBehaviour {
 		an.SetFloat("HSpeed", _inMenu ? 0 : Mathf.Abs(hMov));
 		an.SetFloat("VSpeed", _inMenu ? 0 : rb.velocity.y);
 	}
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "DeathBarrier" || collision.gameObject.tag == "Enemy")
+        {
+            GameOver();
+        }
+    }
+
+    void GameOver() {
+        GameOverText.enabled = true;
+        Destroy(gameObject); // TODO
+    }
 }
