@@ -7,6 +7,7 @@ TagManager:
   - Ground
   - InventoryPanel
   - InventoryCursor
+  - Damage
   layers:
   - Default
   - TransparentFX

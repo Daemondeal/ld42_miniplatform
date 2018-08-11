@@ -14,6 +14,9 @@ public class PlatformCharController : MonoBehaviour {
     [Tooltip("How much slow you need to be considered not moving")]
     public float MovError = 0.1f;
 
+    [Tooltip("Attack duration, in seconds")]
+    public float AttackDuration = 1f;
+
 	public State CurrentState = State.Running;
 
 	Rigidbody2D rb;
@@ -22,12 +25,14 @@ public class PlatformCharController : MonoBehaviour {
 	Collider2D hitbox;
 	AudioSource audios;
 
+    Collider2D damageHitbox;
     InventoryController inventory;
 	GroundedCollider groundCheck;
     
     string[] _allStates;
     State _lastState; // For animation purposes
     bool _inMenu; // Disables input while in menu
+    float _attackDuration = 0f;
 
 	// Use this for initialization
 	void Start () {
@@ -39,6 +44,7 @@ public class PlatformCharController : MonoBehaviour {
         inventory = GetComponent<InventoryController>();
 
 		groundCheck = GetComponentInChildren<GroundedCollider>();
+        damageHitbox = GameObject.FindGameObjectWithTag("Damage").GetComponent<Collider2D>();
 
         // Gets all the possible states in a string array, for animation purposes
         _allStates = ((State[])System.Enum.GetValues(typeof(State))).Select(x => x.ToString()).ToArray();
@@ -56,6 +62,7 @@ public class PlatformCharController : MonoBehaviour {
 		sr.flipX = dir == Direction.Left;
 
         hitbox.offset = new Vector2(dir.ToFloat() * -Mathf.Abs(hitbox.offset.x), hitbox.offset.y);
+        damageHitbox.offset = new Vector2(dir.ToFloat() * Mathf.Abs(damageHitbox.offset.x), damageHitbox.offset.y);
 	}
 
 	public void HitGround() {
@@ -74,6 +81,11 @@ public class PlatformCharController : MonoBehaviour {
         return _inMenu;
     }
 
+    bool HasPickup(PickUp type)
+    {
+        return inventory.HasPickUp(type);
+    }
+
 	void ResetState() {
 		CurrentState = groundCheck.Grounded ? State.Running : State.Falling;
 	}
@@ -82,16 +94,42 @@ public class PlatformCharController : MonoBehaviour {
 		float hMov = Input.GetAxis("Horizontal");
 		float yMov = Input.GetAxis("Vertical");
 
-		
-		if (!_inMenu) UpdateMovement(hMov);
-		UpdateJumping(hMov);
+        if (UpdateTimer(ref _attackDuration))
+        {
+            ResetState();
+            damageHitbox.enabled = false;
+        }        
+
+        if (!_inMenu && CurrentState != State.Attacking && _attackDuration <= 0f)
+        {
+            UpdateMovement(hMov);
+            UpdateJumping(hMov);
+        }
         UpdateFalling();
+
+        if (HasPickup(PickUp.Sword) && Input.GetButtonDown("Attack") && CurrentState == State.Running)
+        {
+            CurrentState = State.Attacking;
+            _attackDuration = AttackDuration;
+            damageHitbox.enabled = true;
+        }
 
 		if (CurrentState == State.Running && !groundCheck.Grounded)
 			CurrentState = State.Falling;
 
         UpdateAnimation(hMov);
 	}
+
+    bool UpdateTimer(ref float timer)
+    {
+        timer -= Time.deltaTime;
+        if (timer < 0f)
+        {
+            timer = 0f;
+            return true;
+        }
+        return false;
+    }
 
 	void UpdateMovement(float hMov) {
 		rb.velocity = new Vector2(hMov * Speed, rb.velocity.y);

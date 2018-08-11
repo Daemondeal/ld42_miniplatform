@@ -9,6 +9,7 @@ public class PickUpController : MonoBehaviour {
 	MeshRenderer text;
     SpriteRenderer sr;
     InventoryController playerInventory;
+    PlatformCharController playerController;
 
 
     [Tooltip("Wait time before player can pick again, in seconds")]
@@ -21,6 +22,7 @@ public class PickUpController : MonoBehaviour {
 		text = GetComponentInChildren<MeshRenderer>();
         sr = GetComponentInChildren<SpriteRenderer>();
         playerInventory = GameObject.FindGameObjectWithTag("Player").GetComponent<InventoryController>();
+        playerController = playerInventory.gameObject.GetComponent<PlatformCharController>();
 	}
 	
 	// Update is called once per frame
@@ -38,7 +40,7 @@ public class PickUpController : MonoBehaviour {
         {
             // Pickup Logic
 
-            if (Input.GetButtonDown("PickUp"))
+            if (Input.GetButtonDown("PickUp") && playerController.CurrentState == State.Running)
             {
                 playerInventory.PickUpItem(this);
                 Debug.Log("PickUp");
