@@ -20,6 +20,11 @@ public enum SkeletonState
     Walking, WaitingForPlayer, Attacking
 }
 
+public enum StateSkeletonBoss
+{
+    Walking, Idle, Attacking, Dying
+}
+
 public static class Extensions {
 	public static float ToFloat(this Direction dir) {
 		return dir == Direction.Left ? -1 : 1;

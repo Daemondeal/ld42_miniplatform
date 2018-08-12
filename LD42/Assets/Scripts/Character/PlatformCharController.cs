@@ -54,6 +54,7 @@ public class PlatformCharController : MonoBehaviour {
 	Collider2D damageHitbox;
 	InventoryController inventory;
 	GroundedCollider groundCheck;
+    Collider2D groundCheckCollider;
 	
 	string[] _allStates;
 	State _lastState = State.Jumping; // For animation purposes
@@ -81,6 +82,7 @@ public class PlatformCharController : MonoBehaviour {
 		inventory = GetComponent<InventoryController>();
 
 		groundCheck = GetComponentInChildren<GroundedCollider>();
+        groundCheckCollider = groundCheck.GetComponent<Collider2D>();
 		damageHitbox = GameObject.FindGameObjectWithTag("Damage").GetComponent<Collider2D>();
 
 		// Gets all the possible states in a string array, for animation purposes
@@ -103,7 +105,10 @@ public class PlatformCharController : MonoBehaviour {
 
 		hitbox.offset = new Vector2(dir.ToFloat() * -Mathf.Abs(hitbox.offset.x), hitbox.offset.y);
 		damageHitbox.offset = new Vector2(dir.ToFloat() * Mathf.Abs(damageHitbox.offset.x), damageHitbox.offset.y);
-	}
+        groundCheckCollider.offset = new Vector2(dir.ToFloat() * -Mathf.Abs(groundCheckCollider.offset.x), groundCheckCollider.offset.y);
+
+        // TODO: OFFSET GROUNDED CHECK
+    }
 
 	public void HitGround() {
 		CurrentState = State.Running;

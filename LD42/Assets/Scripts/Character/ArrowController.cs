@@ -35,7 +35,10 @@ public class ArrowController : MonoBehaviour {
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (new string[]{ "Ground", "Enemy"}.Contains(collision.gameObject.tag))
-        Destroy(gameObject);
+        if (new string[]{ "Ground", "Enemy", "EnemyDamage"}.Contains(collision.gameObject.tag))
+            Destroy(gameObject);
+
+        if (collision.gameObject.tag == "EnemyDamage")
+            Debug.Log("Arrow Destroyed");
     }
 }

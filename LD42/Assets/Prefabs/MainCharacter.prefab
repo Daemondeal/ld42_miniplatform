@@ -73,7 +73,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1680025037219052}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -256.4, y: -69.5, z: 0}
+  m_LocalPosition: {x: 1804.1, y: -62.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4225969882385662}
@@ -102,7 +102,7 @@ Transform:
   m_GameObject: {fileID: 1362175992014630}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 8.3, y: 1, z: 1}
+  m_LocalScale: {x: 19, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4108191354568124}
   m_RootOrder: 0
@@ -189,7 +189,7 @@ EdgeCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -17.63}
+  m_Offset: {x: -0.078, y: -17.7}
   m_EdgeRadius: 0
   m_Points:
   - {x: -0.5, y: 0}
@@ -238,9 +238,9 @@ MonoBehaviour:
   Bounds:
     serializedVersion: 2
     x: -325
-    y: -152
-    width: 832
-    height: 483.4
+    y: -188
+    width: 4000
+    height: 400
   ShowGizmos: 1
   VisibleParallaxes: 1
   Background: {fileID: 0}
@@ -256,7 +256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 150
-  JumpSpeed: 400
+  JumpSpeed: 450
   DoubleJumpSpeed: 350
   MovError: 0.01
   AttackDuration: 0.36
@@ -290,7 +290,7 @@ MonoBehaviour:
   InventoryPanels:
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 0}
+  DefaultSpaces: 0000000001000000
   _cursorIndex: 0
 --- !u!212 &212699051588786166
 SpriteRenderer:

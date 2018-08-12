@@ -14,6 +14,9 @@ public class InventoryController : MonoBehaviour {
 
     public Image[] InventoryPanels;
 
+    [Tooltip("Has to be of the equal size of InventoryPanels")]
+    public PickUp[] DefaultSpaces;
+
     RectTransform cursorPosition;
     Image cursorImage;
     PlatformCharController controller;
@@ -26,29 +29,18 @@ public class InventoryController : MonoBehaviour {
 
     void Start()
     {
-        controller = GetComponent<PlatformCharController>();
-
-        /*Image[] panels = GameObject.FindGameObjectsWithTag("InventoryPanel").Select(x => x.GetComponent<Image>()).ToArray();
-
-        InventoryPanels = new Image[panels.Length];
-        foreach (Image i in InventoryPanels)
-        {
-            if (i.gameObject.name == "Panel1")
-                InventoryPanels[0] = i;
-            else if (i.gameObject.name == "Panel2")
-                InventoryPanels[1] = i;
-            else
-                InventoryPanels[2] = i;
-        }*/
-
-       
+        controller = GetComponent<PlatformCharController>();       
 
         GameObject cursor = GameObject.FindGameObjectWithTag("InventoryCursor");
         cursorPosition = cursor.GetComponent<RectTransform>();
         cursorImage = cursor.GetComponent<Image>();
 
-        _spaces = new PickUp[InventoryPanels.Length];
+        if (InventoryPanels.Length != DefaultSpaces.Length)
+            throw new System.Exception("InventoryPanels and Default Spaces are not the same length!");
 
+        _spaces = DefaultSpaces;
+
+        /*
         for (int i = 0; i < _spaces.Length; i++)
         {
             _spaces[i] = PickUp.Bomb;
@@ -56,7 +48,7 @@ public class InventoryController : MonoBehaviour {
 
         _spaces[0] = PickUp.Sword;
         _spaces[1] = PickUp.Bow;
-        _spaces[2] = PickUp.Bomb;
+        */
     }
 
     public bool MenuState() {
@@ -114,7 +106,8 @@ public class InventoryController : MonoBehaviour {
 
     public void PickUpItem(PickUpController pedestal) {
         _currentPedestal = pedestal;
-        controller.OpenMenu();
+        controller.
+            OpenMenu();
         cursorImage.enabled = true;
         _currentTimer = MenuTimer;
     }
