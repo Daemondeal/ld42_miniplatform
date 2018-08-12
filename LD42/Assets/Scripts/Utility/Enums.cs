@@ -7,12 +7,12 @@ public enum Direction {
 }
 
 public enum State {
-	Running, Falling, Jumping, Attacking, Bow, BowJump
+	Running, Falling, Jumping, Attacking, Bow, BowJump, Sneak
 }
 
 public enum PickUp
 {
-    Sword, Bow, Bomb, DoubleJump
+    Sword, Bow, Bomb, DoubleJump, Sneak
 }
 
 public enum SkeletonState
