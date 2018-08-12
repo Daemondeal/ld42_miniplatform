@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 #pragma warning disable 414, 219
 
@@ -10,6 +11,7 @@ public class PlatformCharController : MonoBehaviour {
 
 	public float Speed = 20f;
 	public float JumpSpeed = 48f;
+    public float DoubleJumpSpeed = 300f;
 
 	[Tooltip("How much slow you need to be considered not moving")]
 	public float MovError = 0.1f;
@@ -36,7 +38,7 @@ public class PlatformCharController : MonoBehaviour {
 
     public State CurrentState = State.Running;
 
-    public UnityEngine.UI.Text GameOverText;
+    public UnityEngine.UI.Image GameOverScreen;
 
 	Rigidbody2D rb;
 	Animator an;
@@ -57,6 +59,7 @@ public class PlatformCharController : MonoBehaviour {
     float _bowJumpDuration = 0f;
 
     bool _arrowShot = false;
+    bool _doubleJumpPossible = false;
 
     bool _dead = false;
 
@@ -122,6 +125,14 @@ public class PlatformCharController : MonoBehaviour {
         if (_dead)
         {
             rb.velocity = Vector2.zero;
+            if (Input.GetButtonDown("Jump"))
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            else if (Input.GetButtonDown("Bow"))
+            {
+                Debug.Log("BOW");
+                Application.Quit();
+            }
+
             return;
         }
         
@@ -144,6 +155,11 @@ public class PlatformCharController : MonoBehaviour {
             _arrowShot = false;
         }
 
+        if (_dead && Input.GetButtonDown("Jump"))
+        {
+            
+        }
+
 
         if (CurrentState == State.Attacking && _attackDuration <= DamageTime)
         {
@@ -152,21 +168,20 @@ public class PlatformCharController : MonoBehaviour {
 
         // Arrow
         if ((CurrentState == State.Bow && _bowDuration <= ArrowTime && !_arrowShot) || (CurrentState == State.BowJump && _bowJumpDuration <= ArrowJumpTime && !_arrowShot))
+            UpdateArrow();
+        
+
+        if (!_inMenu && _attackDuration <= 0f)
         {
-            GameObject arrow = Instantiate(ArrowPrefab);
-            arrow.transform.position = transform.position + new Vector3(ArrowOffset.x * GetDirection().ToFloat(), ArrowOffset.y);
 
-            if (GetDirection() == Direction.Left)
-                arrow.GetComponent<SpriteRenderer>().flipX = true;
-
-            _arrowShot = true;
+            if (_doubleJumpPossible && (CurrentState == State.Jumping || CurrentState == State.Falling) && HasPickup(PickUp.DoubleJump))
+                UpdateDoubleJump();
+            if (!new State[] { State.Attacking, State.Bow, State.BowJump }.Contains(CurrentState))
+            {
+                UpdateMovement(hMov);
+                UpdateJumping(hMov);
+            }
         }
-
-        if (!_inMenu && !new State[] { State.Attacking, State.Bow, State.BowJump }.Contains (CurrentState) && _attackDuration <= 0f)
-		{
-			UpdateMovement(hMov);
-			UpdateJumping(hMov);
-		}
 
         if (CurrentState == State.BowJump)
         {
@@ -203,6 +218,26 @@ public class PlatformCharController : MonoBehaviour {
 		UpdateAnimation(hMov);
 	}
 
+    void UpdateArrow()
+    {
+        GameObject arrow = Instantiate(ArrowPrefab);
+        arrow.transform.position = transform.position + new Vector3(ArrowOffset.x * GetDirection().ToFloat(), ArrowOffset.y);
+
+        if (GetDirection() == Direction.Left)
+            arrow.GetComponent<SpriteRenderer>().flipX = true;
+
+        _arrowShot = true;
+    }
+
+    void UpdateDoubleJump() {
+        if (Input.GetButtonDown("Jump"))
+        {
+            CurrentState = State.Jumping;
+            rb.velocity = new Vector2(rb.velocity.x, DoubleJumpSpeed);
+            _doubleJumpPossible = false;
+        }
+    }
+
 	bool UpdateTimer(ref float timer)
 	{
 		if (timer > 0f)
@@ -231,6 +266,8 @@ public class PlatformCharController : MonoBehaviour {
 			if (CurrentState == State.Running) {
 				rb.velocity += Vector2.up * JumpSpeed;
 				CurrentState = State.Jumping;
+                if (HasPickup(PickUp.DoubleJump))
+                    _doubleJumpPossible = true;
 				//SetDirection(hMov.ToDirection());
 			}
 		}
@@ -281,7 +318,8 @@ public class PlatformCharController : MonoBehaviour {
     }
 
     void GameOver() {
-        GameOverText.enabled = true;
+        //GameOverText.enabled = true;
+        GameOverScreen.GetComponent<Animation>().Play();
         hitbox.enabled = false;
         rb.gravityScale = 0;
         _dead = true;

@@ -257,6 +257,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 150
   JumpSpeed: 400
+  DoubleJumpSpeed: 350
   MovError: 0.01
   AttackDuration: 0.36
   BowDuration: 1.1
@@ -268,7 +269,7 @@ MonoBehaviour:
   ArrowTime: 0.26
   ArrowJumpTime: 0.36
   CurrentState: 0
-  GameOverText: {fileID: 0}
+  GameOverScreen: {fileID: 0}
 --- !u!114 &114919239123083708
 MonoBehaviour:
   m_ObjectHideFlags: 1
