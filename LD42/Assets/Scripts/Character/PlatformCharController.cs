@@ -58,6 +58,8 @@ public class PlatformCharController : MonoBehaviour {
 
     bool _arrowShot = false;
 
+    bool _dead = false;
+
 	// Use this for initialization
 	void Start () {
 		rb = GetComponent<Rigidbody2D>();
@@ -117,6 +119,12 @@ public class PlatformCharController : MonoBehaviour {
 	}
 	
 	void Update () {
+        if (_dead)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+        
 		float hMov = Input.GetAxis("Horizontal");
 		float yMov = Input.GetAxis("Vertical");
 
@@ -240,6 +248,11 @@ public class PlatformCharController : MonoBehaviour {
 	}
 
 	void UpdateAnimation(float hMov) {
+        if (_dead)
+        {
+            ResetAllAnimation();
+            return;
+        }
 		if (CurrentState != _lastState)
 		{
 			ResetAllAnimation();
@@ -259,8 +272,24 @@ public class PlatformCharController : MonoBehaviour {
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "EnemyDamage")
+        {
+            GameOver();
+        }
+    }
+
     void GameOver() {
         GameOverText.enabled = true;
-        Destroy(gameObject); // TODO
+        hitbox.enabled = false;
+        rb.gravityScale = 0;
+        _dead = true;
+
+        ResetAllAnimation();
+        an.SetBool("Dead", true);
+        //Time.timeScale = 0f;
+        
+        //Destroy(gameObject); // TODO
     }
 }

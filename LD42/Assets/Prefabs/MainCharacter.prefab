@@ -243,6 +243,7 @@ MonoBehaviour:
     height: 483.4
   ShowGizmos: 1
   VisibleParallaxes: 1
+  Background: {fileID: 0}
 --- !u!114 &114804663440786774
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -256,7 +257,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 150
   JumpSpeed: 400
-  MovError: 0.3
+  MovError: 0.01
   AttackDuration: 0.36
   BowDuration: 1.1
   BowJumpDuration: 0.9
@@ -267,6 +268,7 @@ MonoBehaviour:
   ArrowTime: 0.26
   ArrowJumpTime: 0.36
   CurrentState: 0
+  GameOverText: {fileID: 0}
 --- !u!114 &114919239123083708
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -84,6 +84,8 @@ public class SlimeController : MonoBehaviour {
     void Die() {
         an.SetBool("Dead", true);
         hitbox.enabled = false;
+        rb.gravityScale = 0;
+        rb.velocity = Vector2.zero;
         _deathCount = DeathDuration;
     }
 

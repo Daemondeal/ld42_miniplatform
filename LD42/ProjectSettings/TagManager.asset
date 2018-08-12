@@ -11,6 +11,7 @@ TagManager:
   - Arrow
   - DeathBarrier
   - Enemy
+  - EnemyDamage
   layers:
   - Default
   - TransparentFX

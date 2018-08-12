@@ -15,6 +15,11 @@ public enum PickUp
     Sword, Bow, Bomb, DoubleJump
 }
 
+public enum SkeletonState
+{
+    Walking, WaitingForPlayer, Attacking
+}
+
 public static class Extensions {
 	public static float ToFloat(this Direction dir) {
 		return dir == Direction.Left ? -1 : 1;

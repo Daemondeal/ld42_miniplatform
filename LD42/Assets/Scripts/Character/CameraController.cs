@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#pragma warning disable 414
+
+
 public class CameraController : MonoBehaviour {
 
     public Rect Bounds;
